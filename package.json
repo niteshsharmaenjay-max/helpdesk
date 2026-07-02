@@ -1,0 +1,13 @@
+{
+  "name": "helpdesk",
+  "private": true,
+  "workspaces": [
+    "client",
+    "server"
+  ],
+  "scripts": {
+    "dev:client": "bun --cwd client dev",
+    "dev:server": "bun --cwd server dev",
+    "build:client": "bun --cwd client build"
+  }
+}

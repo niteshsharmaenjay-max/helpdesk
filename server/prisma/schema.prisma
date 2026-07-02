@@ -1,0 +1,120 @@
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  ADMIN
+  AGENT
+}
+
+enum TicketStatus {
+  OPEN
+  RESOLVED
+  CLOSED
+}
+
+enum TicketCategory {
+  GENERAL_QUESTION
+  TECHNICAL_QUESTION
+  REFUND_REQUEST
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  name         String
+  role         Role     @default(AGENT)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  assignedTickets Ticket[]  @relation("AssignedAgent")
+  emailVerified   Boolean   @default(false)
+  image           String?
+  sessions        Session[]
+  accounts        Account[]
+
+  @@map("user")
+}
+
+model Ticket {
+  id        String         @id @default(cuid())
+  subject   String
+  body      String
+  fromEmail String
+  fromName  String
+  status    TicketStatus   @default(OPEN)
+  category  TicketCategory @default(GENERAL_QUESTION)
+  aiSummary String?
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+
+  assignedTo   User?   @relation("AssignedAgent", fields: [assignedToId], references: [id])
+  assignedToId String?
+
+  messages Message[]
+}
+
+model Message {
+  id        String   @id @default(cuid())
+  body      String
+  fromEmail String
+  fromName  String
+  isAgent   Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  ticket   Ticket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  ticketId String
+}
+
+model Session {
+  id        String   @id @default(cuid())
+  expiresAt DateTime
+  token     String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  ipAddress String?
+  userAgent String?
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([token])
+  @@index([userId])
+  @@map("session")
+}
+
+model Account {
+  id                    String    @id @default(cuid())
+  accountId             String
+  providerId            String
+  userId                String
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accessToken           String?
+  refreshToken          String?
+  idToken               String?
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  password              String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  @@index([userId])
+  @@map("account")
+}
+
+model Verification {
+  id         String   @id @default(cuid())
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([identifier])
+  @@map("verification")
+}
