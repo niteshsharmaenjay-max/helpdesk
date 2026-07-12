@@ -30,7 +30,7 @@ export function LoginForm() {
       setFormError(signInError.message ?? 'Sign in failed')
       return
     }
-    navigate('/')
+    navigate('/dashboard')
   }
 
   const inputGroupBase =

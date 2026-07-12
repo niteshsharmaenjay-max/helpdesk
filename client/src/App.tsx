@@ -3,6 +3,9 @@ import { RequireAuth } from './components/RequireAuth'
 import { HomePage } from './pages/HomePage'
 import { LoginPage } from './pages/LoginPage'
 import { UsersPage } from './pages/UsersPage'
+import { TicketsPage } from './pages/TicketsPage'
+import { TicketDetailPage } from './pages/TicketDetailPage'
+import { DashboardPage } from './pages/DashboardPage'
 
 function App() {
   return (
@@ -14,6 +17,30 @@ function App() {
           element={
             <RequireAuth>
               <HomePage />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/dashboard"
+          element={
+            <RequireAuth>
+              <DashboardPage />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/tickets"
+          element={
+            <RequireAuth>
+              <TicketsPage />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/tickets/:id"
+          element={
+            <RequireAuth>
+              <TicketDetailPage />
             </RequireAuth>
           }
         />

@@ -19,3 +19,9 @@ dist-ssr
 
 .claude/settings.local.json
 .claude/scheduled_tasks.lock
+
+# Playwright
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/

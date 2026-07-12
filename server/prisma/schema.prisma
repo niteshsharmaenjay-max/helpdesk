@@ -25,12 +25,13 @@ enum TicketCategory {
 }
 
 model User {
-  id           String   @id @default(cuid())
-  email        String   @unique
+  id           String    @id @default(cuid())
+  email        String    @unique
   name         String
-  role         Role     @default(AGENT)
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  role         Role      @default(AGENT)
+  deletedAt    DateTime?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
 
   assignedTickets Ticket[]  @relation("AssignedAgent")
   emailVerified   Boolean   @default(false)
@@ -60,12 +61,15 @@ model Ticket {
 }
 
 model Message {
-  id        String   @id @default(cuid())
-  body      String
-  fromEmail String
-  fromName  String
-  isAgent   Boolean  @default(false)
-  createdAt DateTime @default(now())
+  id                 String   @id @default(cuid())
+  body               String
+  fromEmail          String
+  fromName           String
+  isAgent            Boolean  @default(false)
+  createdAt          DateTime @default(now())
+  // Inbound-provider message id (e.g. Postmark's `MessageID`), used to make
+  // webhook delivery/retries idempotent. Null for agent-authored messages.
+  providerMessageId  String?  @unique
 
   ticket   Ticket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
   ticketId String

@@ -7,7 +7,7 @@ export function LoginPage() {
   const { data: session, isPending } = useSession()
 
   if (isPending) return <p className="p-8 text-center text-gray-500">Loading session...</p>
-  if (session) return <Navigate to="/" replace />
+  if (session) return <Navigate to="/dashboard" replace />
 
   return (
     <div className="fixed inset-0 flex items-center justify-center overflow-hidden bg-[#f5f6fa] p-4">
