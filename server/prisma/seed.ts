@@ -1,5 +1,5 @@
 import "dotenv/config";
-import { Role } from "@prisma/client";
+import { Role } from "../generated/prisma";
 import { auth } from "../src/lib/auth.ts";
 import { prisma } from "../src/lib/prisma.ts";
 

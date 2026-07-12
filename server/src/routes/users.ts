@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { Prisma, type Role } from "@prisma/client";
+import { Prisma, type Role } from "../../generated/prisma";
 import { prisma } from "../lib/prisma.ts";
 import { auth } from "../lib/auth.ts";
 import { requireRole } from "../middleware/requireRole.ts";

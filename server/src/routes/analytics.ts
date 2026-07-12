@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { Prisma, TicketCategory, TicketStatus } from "@prisma/client";
+import { Prisma, TicketCategory, TicketStatus } from "../../generated/prisma";
 import { prisma } from "../lib/prisma.ts";
 import { requireRole } from "../middleware/requireRole.ts";
 

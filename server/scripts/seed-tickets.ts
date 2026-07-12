@@ -1,5 +1,5 @@
 import "dotenv/config";
-import { Role, TicketCategory, TicketStatus } from "@prisma/client";
+import { Role, TicketCategory, TicketStatus } from "../generated/prisma";
 import { prisma } from "../src/lib/prisma.ts";
 
 type TicketTemplate = {

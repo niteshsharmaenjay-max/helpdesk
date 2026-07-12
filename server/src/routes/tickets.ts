@@ -1,5 +1,5 @@
 import { Router, type Request } from "express";
-import { TicketCategory, TicketStatus, type Prisma } from "@prisma/client";
+import { TicketCategory, TicketStatus, type Prisma } from "../../generated/prisma";
 import { generateText } from "ai";
 import { google } from "@ai-sdk/google";
 import { prisma } from "../lib/prisma.ts";

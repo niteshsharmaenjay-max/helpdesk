@@ -1,6 +1,7 @@
 **/node_modules
 **/dist
 **/dist-ssr
+server/generated
 .git
 .claude
 test-results
