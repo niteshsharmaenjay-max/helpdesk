@@ -1,0 +1,59 @@
+services:
+  postgres:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-helpdesk}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-helpdesk}
+      POSTGRES_DB: ${POSTGRES_DB:-helpdesk}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-helpdesk}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+
+  server:
+    build:
+      context: .
+      dockerfile: server/Dockerfile
+    # Bind-mounted rather than loaded via `env_file:` — server/.env's values
+    # are double-quoted (the convention this project's .env files already
+    # use for local/dotenv loading), and Docker's env_file mechanism injects
+    # them verbatim, quotes included, instead of stripping them the way
+    # `dotenv/config` (imported at the top of src/index.ts and
+    # prisma.config.ts) does. Mounting the file and letting the app parse it
+    # itself keeps one .env format that works the same everywhere.
+    volumes:
+      - ./server/.env:/app/server/.env:ro
+    environment:
+      # These override whatever's in the mounted server/.env — they're
+      # specific to the compose network/topology, not secrets, so they don't
+      # belong in the .env file that's meant to be reused across
+      # environments. dotenv doesn't overwrite already-set process env vars,
+      # so these always win over the file.
+      DATABASE_URL: postgresql://${POSTGRES_USER:-helpdesk}:${POSTGRES_PASSWORD:-helpdesk}@postgres:5432/${POSTGRES_DB:-helpdesk}
+      SHADOW_DATABASE_URL: postgresql://${POSTGRES_USER:-helpdesk}:${POSTGRES_PASSWORD:-helpdesk}@postgres:5432/${POSTGRES_DB:-helpdesk}_shadow
+      PORT: 3000
+      BETTER_AUTH_URL: ${PUBLIC_URL:-http://localhost}
+      TRUSTED_ORIGINS: ${PUBLIC_URL:-http://localhost}
+    ports:
+      - "3000:3000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+
+  client:
+    build:
+      context: .
+      dockerfile: client/Dockerfile
+    ports:
+      - "${CLIENT_PORT:-80}:80"
+    depends_on:
+      - server
+    restart: unless-stopped
+
+volumes:
+  postgres_data:

@@ -1,0 +1,16 @@
+**/node_modules
+**/dist
+**/dist-ssr
+.git
+.claude
+test-results
+playwright-report
+blob-report
+playwright/.cache
+e2e
+*.log
+.DS_Store
+.env
+.env.*
+!.env.example
+!server/.env.example
