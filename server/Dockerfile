@@ -41,7 +41,11 @@ WORKDIR /app/server
 ENV NODE_ENV=production
 EXPOSE 3000
 
-# Migrations (and seeding the initial admin/agent users — idempotent, see
-# prisma/seed.ts) run against the real, now-reachable database at container
-# start, not at build time.
-CMD ["sh", "-c", "bunx prisma migrate deploy && bun prisma/seed.ts && bun src/index.ts"]
+# `prisma generate` also re-runs here, not just at build time above: some
+# platforms (observed on Railway) don't reliably carry build-time RUN output
+# through to the deployed container — the generated client can end up
+# missing at runtime even though the build step reported success. Running
+# it again at start is cheap (~150ms) and makes startup self-contained
+# regardless of what the build cache did. Migrations/seeding (idempotent,
+# see prisma/seed.ts) then run against the real, now-reachable database.
+CMD ["sh", "-c", "bunx prisma generate && bunx prisma migrate deploy && bun prisma/seed.ts && bun src/index.ts"]
