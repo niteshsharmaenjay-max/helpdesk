@@ -24,6 +24,10 @@ WORKDIR /app/client
 RUN bun run build
 
 FROM nginx:alpine AS runtime
-COPY client/nginx.conf /etc/nginx/conf.d/default.conf
+COPY client/nginx.conf /etc/nginx/templates/default.conf.template
 COPY --from=build /app/client/dist /usr/share/nginx/html
+# Default matches the docker-compose service name; override per-platform
+# (see client/nginx.conf's comment) — e.g. on Railway, set this to the
+# server service's private-networking address instead.
+ENV SERVER_UPSTREAM=server:3000
 EXPOSE 80
