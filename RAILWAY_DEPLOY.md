@@ -25,9 +25,13 @@ services will pull from.
 - **Root Directory**: leave as `/` (repo root). Don't scope it to `server/` — both Dockerfiles
   assume a repo-root build context because of the Bun workspace (see the comment at the top of
   `server/Dockerfile`).
-- **Settings → Build → Config-as-code path**: set to `server/railway.json`. Railway only
-  auto-reads a root-level `railway.json` by default; since this repo has one per service, you have
-  to point each Railway service at its own file explicitly.
+- **Settings → Build → Config-as-code path**: set to `/server/railway.json` — **with the leading
+  slash**. Railway resolves this path as absolute from the repo root regardless of Root Directory;
+  a path without the leading slash silently fails to match and Railway falls back to Railpack
+  (which then fails with a "no main field / no index.js" error, since it's trying to auto-detect a
+  Node entrypoint instead of using the Dockerfile). Railway only auto-reads a root-level
+  `railway.json` by default; since this repo has one per service, you have to point each Railway
+  service at its own file explicitly.
 - **Settings → Networking**: no public domain needed — Railway healthchecks reach the service over
   the private network regardless.
 
@@ -55,7 +59,7 @@ only auto-injects `PORT` for services with a public domain, which this one doesn
 Same repo, same "+ New → GitHub Repo" flow, as a second service in the same project.
 
 - **Root Directory**: `/` (same reasoning as server).
-- **Config-as-code path**: `client/railway.json`.
+- **Config-as-code path**: `/client/railway.json` — leading slash, same reasoning as server.
 - **Settings → Networking → Generate Domain**: enable this — this is the service the browser hits.
 
 **Variables:**
@@ -92,10 +96,17 @@ reference each other's addresses.
   (~150ms) safety net — don't remove that call even if it looks redundant with the build step.
 - **Private networking hostnames need the port.** `${{server.RAILWAY_PRIVATE_DOMAIN}}` resolves to
   a bare hostname; `SERVER_UPSTREAM` needs `:3000` appended since nginx's `proxy_pass` needs a port.
-- **`railway.json` per service, not one at the repo root.** If a service's build looks like it's
-  using default Nixpacks detection instead of the Dockerfile, check that its Config-as-code path is
-  actually set to `server/railway.json` / `client/railway.json` in the dashboard — Railway won't
-  find those automatically.
+- **`railway.json` per service, not one at the repo root.** Railway's schema has no multi-service
+  `services` key, so one file can't configure both — each service needs its own Config-as-code
+  path. If a service's build falls back to Railpack/Nixpacks detection (typically failing with "no
+  main field / no index.js" since it's trying to guess a Node entrypoint instead of using the
+  Dockerfile), check the path.
+- **The Config-as-code path must be absolute from the repo root, with a leading slash** —
+  `/server/railway.json` / `/client/railway.json`, not `server/railway.json`. This is easy to get
+  wrong and fails silently (no error, it just doesn't match, and Railway quietly falls back to
+  Railpack). Railway's own monorepo docs example is `/backend/railway.toml`. This is independent of
+  the service's Root Directory setting — the config path is always relative to the repo root, never
+  to Root Directory.
 
 ## Verifying
 
