@@ -49,7 +49,7 @@ These are test-only, gitignored, low-stakes credentials — fine to hardcode dir
 
 Some scenarios (sign-up actually being disabled server-side, role escalation via `update-user`, etc.) need to hit Better Auth's REST API directly instead of driving the UI — use the `request` fixture (anonymous) or `page.request` (carries the logged-in page's session cookies automatically).
 
-**Gotcha:** the client's Better Auth instance defaults to base path `/api/auth`, not `/api`. Vite's `/api` proxy strips only the `/api` prefix before forwarding to the server, and the server itself mounts Better Auth at `/auth` (`app.all("/auth/*splat", ...)` in `server/src/index.ts`). So every direct API call in a test must go to `/api/auth/<endpoint>`, e.g.:
+**Gotcha:** the client's Better Auth instance defaults to base path `/api/auth`, not `/api`. The server mounts Better Auth at that same path (`app.all("/api/auth/*splat", ...)` in `server/src/index.ts` — the server serves the built client directly and routes everything under `/api`, so Vite's dev proxy forwards `/api/*` through unchanged, no prefix stripped). So every direct API call in a test must go to `/api/auth/<endpoint>`, e.g.:
 
 ```ts
 await request.post("/api/auth/sign-up/email", { data: { email, password, name } });

@@ -1,6 +1,18 @@
-# Build context is the repo root (see docker-compose.yml) because this is a
-# Bun workspace: installing from server/ alone can't resolve the workspace
-# link back to the root lockfile.
+# Single service: this one image builds the client and runs the server, which
+# serves the built client directly (see server/src/index.ts) — no nginx, no
+# second container, no private networking between two services. Named
+# `Dockerfile` at the repo root on purpose: Railway (and most platforms)
+# auto-detect a root-level file with this exact name with zero configuration,
+# unlike the previous two-service setup (server/Dockerfile + client/Dockerfile)
+# which needed a per-service Dockerfile path pointed at explicitly and was
+# unreliable in practice.
+#
+# Single-stage on purpose, same reasoning as the old server/Dockerfile: `bun
+# install` at the repo root populates /app/node_modules with every workspace
+# package's dependencies (hoisted), and since everything below happens in
+# that same continuous filesystem rather than a separate build stage, that
+# node_modules is just already there in the final image — no cross-stage
+# COPY needed to carry it over.
 #
 # Note on the Prisma CLI: `bun install`'s postinstall does NOT run
 # `prisma generate` here (Bun only runs lifecycle scripts for packages it
@@ -11,9 +23,7 @@
 # which lacks synchronous require(esm) support that one of its
 # dependencies needs. Inside this image there is no real Node binary at
 # all — `node` is a symlink to `bun` itself — so the CLI runs under Bun's
-# own module loader instead and works correctly; confirmed by running
-# `prisma generate` and `prisma migrate deploy` directly in this image
-# against a real Postgres container.
+# own module loader instead and works correctly.
 FROM oven/bun:1 AS base
 WORKDIR /app
 
@@ -28,14 +38,24 @@ RUN bun install --frozen-lockfile
 
 # prisma.config.ts resolves DATABASE_URL/SHADOW_DATABASE_URL eagerly even
 # for `generate` (which doesn't touch a live DB) — placeholders satisfy
-# that at build time; docker-compose sets the real values at container
-# start, well before `migrate deploy`/the server itself run.
+# that at build time; the real values are set at container start, well
+# before `migrate deploy`/the server itself run.
 RUN cd server && \
     DATABASE_URL="postgresql://placeholder:placeholder@placeholder:5432/placeholder" \
     SHADOW_DATABASE_URL="postgresql://placeholder:placeholder@placeholder:5432/placeholder" \
     bunx prisma generate
 
 COPY server ./server
+COPY client ./client
+
+# Build the client and place its output where server/src/index.ts serves
+# static assets from (`publicDir`, resolved as `../public` relative to
+# server/src). This has to happen after `COPY client ./client` — client/src
+# type-imports server/src/lib/auth.ts (Better Auth's `inferAdditionalFields`
+# pattern), which needs the Prisma client generated above to resolve.
+RUN cd client && bun run build && \
+    rm -rf /app/server/public && \
+    mv /app/client/dist /app/server/public
 
 WORKDIR /app/server
 ENV NODE_ENV=production

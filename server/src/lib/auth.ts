@@ -11,7 +11,12 @@ const trustedOrigins = (
   .map((origin) => origin.trim());
 
 export const auth = betterAuth({
-  basePath: "/auth",
+  // Matches the client's default basePath and the Express mount in
+  // src/index.ts (`/api/auth/*splat`) — this server now serves the built
+  // client directly, so there's no separate proxy stripping an /api prefix
+  // in between; Better Auth's own basePath has to line up with the actual
+  // incoming request path or it won't recognize its own routes.
+  basePath: "/api/auth",
   trustedOrigins,
   database: prismaAdapter(prisma, { provider: "postgresql" }),
   advanced: {
