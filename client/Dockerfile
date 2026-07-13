@@ -33,4 +33,9 @@ ENV SERVER_UPSTREAM=server:3000
 # Default for platforms (docker-compose) that don't inject PORT themselves.
 # Railway sets its own PORT at runtime and nginx.conf's template picks it up.
 ENV PORT=80
+# Enables nginx's official-image entrypoint hook that parses /etc/resolv.conf
+# and exports NGINX_LOCAL_RESOLVERS, which nginx.conf's `resolver` directive
+# uses — see nginx.conf's comment for why this matters (lazy DNS resolution
+# for SERVER_UPSTREAM instead of crashing at boot if it's not resolvable yet).
+ENV NGINX_ENTRYPOINT_LOCAL_RESOLVERS=1
 EXPOSE 80
