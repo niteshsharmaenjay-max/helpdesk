@@ -1,4 +1,4 @@
-import { Zap } from 'lucide-react'
+import { CheckCircle2, MessageSquare, Zap } from 'lucide-react'
 import { Navigate } from 'react-router'
 import { LoginForm } from '../components/LoginForm'
 import { useSession } from '../lib/auth-client'
@@ -10,24 +10,48 @@ export function LoginPage() {
   if (session) return <Navigate to="/dashboard" replace />
 
   return (
-    <div className="fixed inset-0 flex items-center justify-center overflow-hidden bg-[#f5f6fa] p-4">
-      <div
-        aria-hidden
-        className="pointer-events-none absolute -top-[20%] -left-[10%] h-[600px] w-[600px] rounded-full bg-[radial-gradient(circle,rgba(99,102,241,0.12)_0%,transparent_70%)]"
-      />
-      <div
-        aria-hidden
-        className="pointer-events-none absolute -right-[10%] -bottom-[20%] h-[500px] w-[500px] rounded-full bg-[radial-gradient(circle,rgba(16,185,129,0.08)_0%,transparent_70%)]"
-      />
-      <div className="relative box-border w-[420px] max-w-full rounded-[10px] border border-black/6 bg-white/85 p-10 shadow-[0_10px_24px_rgba(0,0,0,0.06),0_4px_8px_rgba(0,0,0,0.04)] backdrop-blur-2xl">
-        <div className="mb-8 flex flex-col items-center">
-          <div className="mb-4 flex h-13 w-13 items-center justify-center rounded-[14px] bg-gradient-to-br from-indigo-500 to-indigo-400 text-white shadow-[0_0_24px_rgba(99,102,241,0.15)]">
-            <Zap size={26} fill="white" />
+    <div className="fixed inset-0 flex overflow-hidden">
+      <div className="relative hidden w-[45%] flex-col justify-between overflow-hidden bg-gradient-to-br from-indigo-700 via-indigo-800 to-slate-900 p-12 text-white lg:flex">
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_1px_1px,rgba(255,255,255,0.08)_1px,transparent_0)] [background-size:24px_24px]"
+        />
+        <div className="relative flex items-center gap-2">
+          <div className="flex h-9 w-9 items-center justify-center rounded-full bg-white/15">
+            <Zap size={18} />
           </div>
-          <h1 className="m-0 text-2xl font-bold tracking-tight text-gray-900">Helpdesk</h1>
-          <p className="mt-1 text-sm text-gray-500">Sign in to your workspace</p>
+          <span className="text-lg font-semibold">Helpdesk</span>
         </div>
-        <LoginForm />
+        <div className="relative">
+          <h2 className="mb-3 max-w-sm text-3xl font-bold leading-tight">Every ticket, handled with clarity.</h2>
+          <p className="max-w-sm text-sm text-indigo-100/75">
+            AI-assisted triage, replies, and routing so your team can focus on the conversations that matter.
+          </p>
+        </div>
+        <div className="relative flex flex-col gap-3 text-sm text-indigo-100/75">
+          <div className="flex items-center gap-2 [animation:login-float-1_6s_ease-in-out_infinite]">
+            <MessageSquare size={16} />
+            Smart reply suggestions
+          </div>
+          <div className="flex items-center gap-2 [animation:login-float-2_7s_ease-in-out_infinite]">
+            <CheckCircle2 size={16} />
+            Automatic categorization
+          </div>
+        </div>
+      </div>
+
+      <div className="flex flex-1 items-center justify-center bg-[#0b0f19] p-6">
+        <div className="w-full max-w-[360px]">
+          <div className="mb-8 flex flex-col items-center lg:hidden">
+            <div className="mb-3 flex h-11 w-11 items-center justify-center rounded-full bg-indigo-500 text-white">
+              <Zap size={20} fill="white" />
+            </div>
+            <h1 className="text-xl font-bold text-white">Helpdesk</h1>
+          </div>
+          <h1 className="mb-1 hidden text-2xl font-bold text-white lg:block">Sign in</h1>
+          <p className="mb-8 hidden text-sm text-gray-400 lg:block">Welcome back to your workspace.</p>
+          <LoginForm />
+        </div>
       </div>
     </div>
   )

@@ -34,59 +34,59 @@ export function LoginForm() {
   }
 
   const inputGroupBase =
-    'flex items-center gap-2 rounded-md border bg-[#eeeff3] px-3.5 py-2.5 transition-all focus-within:ring-4'
-  const inputGroupValid = 'border-black/6 focus-within:border-indigo-500 focus-within:ring-indigo-500/20'
-  const inputGroupInvalid = 'border-red-500 focus-within:ring-red-500/20'
+    'flex items-center gap-2 rounded-md border bg-[#151a26] px-3.5 py-2.5 transition-all focus-within:ring-4'
+  const inputGroupValid = 'border-white/12 focus-within:border-indigo-400 focus-within:ring-indigo-500/20'
+  const inputGroupInvalid = 'border-red-500/60 focus-within:ring-red-500/20'
 
   return (
     <form className="flex flex-col gap-5" onSubmit={handleSubmit(onSubmit)} noValidate>
       <div>
-        <label htmlFor="email" className="mb-1.5 block text-xs font-medium text-gray-500">
+        <label htmlFor="email" className="mb-1.5 block text-xs font-medium text-gray-400">
           Email
         </label>
         <div className={`${inputGroupBase} ${errors.email ? inputGroupInvalid : inputGroupValid}`}>
-          <Mail size={16} className="shrink-0 text-gray-400" />
+          <Mail size={16} className="shrink-0 text-gray-500" />
           <input
             id="email"
             placeholder="you@company.com"
             type="email"
             autoComplete="email"
             aria-invalid={errors.email ? 'true' : 'false'}
-            className="flex-1 border-none bg-transparent text-sm text-gray-900 outline-none placeholder:text-gray-400"
+            className="flex-1 border-none bg-transparent text-sm text-gray-100 outline-none placeholder:text-gray-500"
             {...register('email')}
           />
         </div>
-        {errors.email && <p className="m-0 mt-1.5 text-xs text-red-500">{errors.email.message}</p>}
+        {errors.email && <p className="m-0 mt-1.5 text-xs text-red-400">{errors.email.message}</p>}
       </div>
       <div>
-        <label htmlFor="password" className="mb-1.5 block text-xs font-medium text-gray-500">
+        <label htmlFor="password" className="mb-1.5 block text-xs font-medium text-gray-400">
           Password
         </label>
         <div className={`${inputGroupBase} ${errors.password ? inputGroupInvalid : inputGroupValid}`}>
-          <Lock size={16} className="shrink-0 text-gray-400" />
+          <Lock size={16} className="shrink-0 text-gray-500" />
           <input
             id="password"
             placeholder="••••••••"
             type={showPassword ? 'text' : 'password'}
             autoComplete="current-password"
             aria-invalid={errors.password ? 'true' : 'false'}
-            className="flex-1 border-none bg-transparent text-sm text-gray-900 outline-none placeholder:text-gray-400"
+            className="flex-1 border-none bg-transparent text-sm text-gray-100 outline-none placeholder:text-gray-500"
             {...register('password')}
           />
           <button
             type="button"
             tabIndex={-1}
-            className="flex shrink-0 cursor-pointer border-none bg-transparent p-0 text-gray-400"
+            className="flex shrink-0 cursor-pointer border-none bg-transparent p-0 text-gray-500 hover:text-gray-300"
             onClick={() => setShowPassword((show) => !show)}
             aria-label={showPassword ? 'Hide password' : 'Show password'}
           >
             {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
           </button>
         </div>
-        {errors.password && <p className="m-0 mt-1.5 text-xs text-red-500">{errors.password.message}</p>}
+        {errors.password && <p className="m-0 mt-1.5 text-xs text-red-400">{errors.password.message}</p>}
       </div>
       <button
-        className="mt-1 flex w-full cursor-pointer items-center justify-center gap-2 rounded-md bg-gradient-to-br from-indigo-500 to-indigo-400 px-6 py-3 text-[15px] font-semibold text-white transition-opacity disabled:cursor-not-allowed disabled:opacity-60"
+        className="mt-1 flex w-full cursor-pointer items-center justify-center gap-2 rounded-md bg-indigo-500 px-6 py-3 text-[15px] font-semibold text-white transition-colors hover:bg-indigo-600 disabled:cursor-not-allowed disabled:opacity-60"
         type="submit"
         disabled={isSubmitting}
       >
@@ -94,7 +94,7 @@ export function LoginForm() {
         Sign in
       </button>
       {formError && (
-        <p className="m-0 text-center text-[13px] text-red-500" role="alert">
+        <p className="m-0 text-center text-[13px] text-red-400" role="alert">
           {formError}
         </p>
       )}
