@@ -3,5 +3,10 @@
   "build": {
     "builder": "DOCKERFILE",
     "dockerfilePath": "server/Dockerfile"
+  },
+  "deploy": {
+    "healthcheckPath": "/health",
+    "healthcheckTimeout": 100,
+    "restartPolicyType": "ON_FAILURE"
   }
 }

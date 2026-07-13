@@ -30,4 +30,7 @@ COPY --from=build /app/client/dist /usr/share/nginx/html
 # (see client/nginx.conf's comment) — e.g. on Railway, set this to the
 # server service's private-networking address instead.
 ENV SERVER_UPSTREAM=server:3000
+# Default for platforms (docker-compose) that don't inject PORT themselves.
+# Railway sets its own PORT at runtime and nginx.conf's template picks it up.
+ENV PORT=80
 EXPOSE 80
