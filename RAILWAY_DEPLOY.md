@@ -25,13 +25,10 @@ services will pull from.
 - **Root Directory**: leave as `/` (repo root). Don't scope it to `server/` — both Dockerfiles
   assume a repo-root build context because of the Bun workspace (see the comment at the top of
   `server/Dockerfile`).
-- **Settings → Build → Config-as-code path**: set to `/server/railway.json` — **with the leading
-  slash**. Railway resolves this path as absolute from the repo root regardless of Root Directory;
-  a path without the leading slash silently fails to match and Railway falls back to Railpack
-  (which then fails with a "no main field / no index.js" error, since it's trying to auto-detect a
-  Node entrypoint instead of using the Dockerfile). Railway only auto-reads a root-level
-  `railway.json` by default; since this repo has one per service, you have to point each Railway
-  service at its own file explicitly.
+- Set `RAILWAY_DOCKERFILE_PATH` as a **Variable** on the service (Variables tab, not Settings) —
+  see the table below. This is the reliable way to force the Dockerfile builder; see the gotcha
+  below on why the Settings → Build dashboard fields (Builder dropdown / Config-as-code path) are
+  not the recommended path here.
 - **Settings → Networking**: no public domain needed — Railway healthchecks reach the service over
   the private network regardless.
 
@@ -39,6 +36,7 @@ services will pull from.
 
 | Variable | Value |
 |---|---|
+| `RAILWAY_DOCKERFILE_PATH` | `/server/Dockerfile` |
 | `DATABASE_URL` | `${{Postgres.DATABASE_URL}}` |
 | `SHADOW_DATABASE_URL` | `${{Postgres.DATABASE_URL}}` (see gotcha below — any valid Postgres URL works, it's never actually connected to) |
 | `BETTER_AUTH_SECRET` | a long random string — generate with `openssl rand -base64 32` |
@@ -59,13 +57,14 @@ only auto-injects `PORT` for services with a public domain, which this one doesn
 Same repo, same "+ New → GitHub Repo" flow, as a second service in the same project.
 
 - **Root Directory**: `/` (same reasoning as server).
-- **Config-as-code path**: `/client/railway.json` — leading slash, same reasoning as server.
+- Set `RAILWAY_DOCKERFILE_PATH` as a Variable, same as server — see table below.
 - **Settings → Networking → Generate Domain**: enable this — this is the service the browser hits.
 
 **Variables:**
 
 | Variable | Value |
 |---|---|
+| `RAILWAY_DOCKERFILE_PATH` | `/client/Dockerfile` |
 | `SERVER_UPSTREAM` | `${{server.RAILWAY_PRIVATE_DOMAIN}}:3000` |
 
 Leave `PORT` unset — Railway injects it automatically for services with a generated domain, and
@@ -96,17 +95,21 @@ reference each other's addresses.
   (~150ms) safety net — don't remove that call even if it looks redundant with the build step.
 - **Private networking hostnames need the port.** `${{server.RAILWAY_PRIVATE_DOMAIN}}` resolves to
   a bare hostname; `SERVER_UPSTREAM` needs `:3000` appended since nginx's `proxy_pass` needs a port.
+- **Force the Dockerfile builder via the `RAILWAY_DOCKERFILE_PATH` variable, not the dashboard.**
+  Railway auto-detects a Dockerfile only if it's literally named `Dockerfile` at the service's
+  source root; for a nested monorepo Dockerfile like this repo's, that auto-detection never fires.
+  In principle the Settings → Build "Builder" dropdown + "Config-as-code path"/`railway.json` are
+  supposed to override this, but in practice both were observed to silently not take effect for
+  this repo — the build kept falling back to Railpack (which then fails trying to guess a Node
+  entrypoint, since there's no root-level `package.json` main/index file) even after setting them.
+  Setting `RAILWAY_DOCKERFILE_PATH=/server/Dockerfile` (or `/client/Dockerfile`) as a plain
+  environment **Variable** on the service is the mechanism that actually works — it's read directly
+  by Railway's build step, independent of whatever the Settings UI shows. Leading slash, absolute
+  from the repo root, same as the `railway.json`/`Dockerfile` naming convention below.
 - **`railway.json` per service, not one at the repo root.** Railway's schema has no multi-service
-  `services` key, so one file can't configure both — each service needs its own Config-as-code
-  path. If a service's build falls back to Railpack/Nixpacks detection (typically failing with "no
-  main field / no index.js" since it's trying to guess a Node entrypoint instead of using the
-  Dockerfile), check the path.
-- **The Config-as-code path must be absolute from the repo root, with a leading slash** —
-  `/server/railway.json` / `/client/railway.json`, not `server/railway.json`. This is easy to get
-  wrong and fails silently (no error, it just doesn't match, and Railway quietly falls back to
-  Railpack). Railway's own monorepo docs example is `/backend/railway.toml`. This is independent of
-  the service's Root Directory setting — the config path is always relative to the repo root, never
-  to Root Directory.
+  `services` key, so one file can't configure both. These still exist in the repo and are harmless,
+  but `RAILWAY_DOCKERFILE_PATH` is the one that reliably forces the Dockerfile builder — treat the
+  `railway.json` files as a secondary, best-effort config-as-code path rather than the primary fix.
 
 ## Verifying
 
